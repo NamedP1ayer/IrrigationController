@@ -93,7 +93,6 @@ def parse_slack_output(slack_rtm_output):
 
 def event_to_command(event):
     command = ""
-    print(event)
     if 'username' in event and 'attachments' in event and len(event['attachments']) == 1 and 'title' in event['attachments'][0] and 'text' in event['attachments'][0]:
         if event['username'] == "Irrigation":
             zone = event['attachments'][0]['title']

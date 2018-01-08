@@ -2,6 +2,7 @@ import socket
 import os
 import time
 from slackclient import SlackClient
+import re
 
 def print_next(command):
     return "Not implemented"
@@ -89,6 +90,22 @@ def parse_slack_output(slack_rtm_output):
                 return output['text'], output['channel']
     return None, None
 
+
+def event_to_command(event):
+    command = ""
+    print(event)
+    if 'username' in event and 'attachments' in event and len(event['attachments']) == 1 and 'title' in event['attachments'][0] and 'text' in event['attachments'][0]:
+        if event['username'] == "Irrigation":
+            zone = event['attachments'][0]['title']
+            regexp = r'\^(\d*)\^'
+            results = re.findall(regexp, event['attachments'][0]['text'])
+            if len(results) == 2:
+                on_time = int(results[1]) - int(results[0])
+                if on_time <= 3600:
+                    command = AT_BOT + "just on " + zone + " " + str(on_time)
+
+    return command
+
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
 
@@ -115,12 +132,23 @@ def main():
     last_channel = None
 
     if slack_client.rtm_connect():
-        print("StarterBot connected and running!")
+        print("Irrigation Controller connected and running!")
         while True:
-            command, channel = parse_slack_output(slack_client.rtm_read())
-            if command and channel:
-                handle_command(command, channel)
-                last_channel = channel
+            slack_event = slack_client.rtm_read()
+            if len(slack_event) == 1:
+                scheduled_command = event_to_command(slack_event[0])
+
+                if len(scheduled_command) > 5:
+                    last_channel = slack_event[0]['channel']
+                    handle_command(scheduled_command, last_channel)
+                else:
+                    command, channel = parse_slack_output(slack_event)
+                    if command and channel:
+                        handle_command(command, channel)
+                        last_channel = channel
+
+                if slack_event[0]['type'] != 'reconnect_url':
+                    print(slack_event)
 
             try:
                 data = s.recv(BUFFER_SIZE)

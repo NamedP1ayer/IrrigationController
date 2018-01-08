@@ -16,6 +16,10 @@ At the moment it doesnt have any of the AAS features.
 * Something running IrrigationServer
 * A SLACK_BOT_TOKEN and BOT_ID as described [here](https://www.fullstackpython.com/blog/build-first-slack-bot-python.html)
    * I [jam](https://coreos.com/os/docs/latest/using-environment-variables-in-systemd-units.html) these into my [system-d](https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/) environment.
-* pip3 install SlackClient 
+* pip3 install SlackClient
+
+## Setup using systemd
+sudo systemctl restart IrrigationController.service
+
 ## How do I contribute?
 Your kidding right?
